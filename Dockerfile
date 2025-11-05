@@ -30,5 +30,6 @@ COPY app /app
 ENV PORT=5000
 EXPOSE 5000
 # CMD ["gunicorn", "-b", "0.0.0.0:5000", "main:app", "--workers=2"]
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "main:app", "--workers=1", "--preload"]
+# CMD ["gunicorn", "-b", "0.0.0.0:5000", "main:app", "--workers=1", "--preload"]
+CMD ["python", "main.py"]
 

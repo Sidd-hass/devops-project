@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: flask-devops
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: flask-devops
@@ -22,16 +22,18 @@ spec:
             - containerPort: 5000
           livenessProbe:
             httpGet:
-              path: /
+              path: /health
               port: 5000
             initialDelaySeconds: 10
             periodSeconds: 10
+            failureThreshold: 3
           readinessProbe:
             httpGet:
-              path: /
+              path: /health
               port: 5000
             initialDelaySeconds: 5
             periodSeconds: 5
+            failureThreshold: 3
           env:
             - name: FLASK_ENV
               value: production
