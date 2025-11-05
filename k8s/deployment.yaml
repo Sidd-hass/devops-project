@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-devops
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: flask-devops
+  template:
+    metadata:
+      labels:
+        app: flask-devops
+    spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
+      containers:
+        - name: flask-devops
+          image: sidd24/devops-assignment:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          env:
+            - name: FLASK_ENV
+              value: production
