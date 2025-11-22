@@ -1,0 +1,20 @@
+groups:
+- name: pod-health-alerts
+  rules:
+  - alert: PodCrashLooping
+    expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} > 0
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Pod {{ $labels.pod }} is crashing frequently"
+      description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is in CrashLoopBackOff state for more than 2 minutes."
+
+  - alert: ImagePullError
+    expr: kube_pod_container_status_waiting_reason{reason=~"ImagePullBackOff|ErrImagePull"} > 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Pod {{ $labels.pod }} has image pull issues"
+      description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is in {{ $labels.reason }} state for more than 2 minutes."

@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: flask.74.220.25.209.nip.io
+    - host: flask.74.220.25.210.nip.io
       http:
         paths:
           - path: /
