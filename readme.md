@@ -65,19 +65,19 @@ spec:
             - containerPort: 5000
           livenessProbe:
             httpGet:
-              path: /
+              path: /health
               port: 5000
             initialDelaySeconds: 10
             periodSeconds: 10
           readinessProbe:
             httpGet:
-              path: /
+              path: /health
               port: 5000
             initialDelaySeconds: 5
             periodSeconds: 5
           env:
-            - name: FLASK_ENV
-              value: production
+            - name: FLASK_DEBUG
+              value: "false"
 ```
 
 ### Create Service
@@ -105,14 +105,39 @@ kubectl apply -f k8s/flask-service.yaml
 
 ---
 
-## 🌐 Step 3: Install NGINX Ingress Controller
+## 💥 Step 3: Test Auto-Restart (Crash Simulation)
+
+To simulate a crash and verify Kubernetes self-healing:
+
+```bash
+curl -u admin:password http://flask.74.220.25.209.nip.io/crash
+```
+
+You’ll get:
+```
+Pod will be marked unhealthy soon
+```
+
+Then check the pod status:
+```bash
+kubectl get pods -l app=flask-devops -w
+```
+
+You’ll see something like:
+```
+flask-devops-84b89c586b-gpj4s   0/1   Running   1 (5s ago)   3m25s
+```
+The **RESTARTS** count confirms Kubernetes restarted your container.
+
+---
+
+## 🌐 Step 4: Install NGINX Ingress Controller
 
 Using Helm:
 ```bash
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm repo update
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-  --namespace ingress-nginx --create-namespace
+helm install ingress-nginx ingress-nginx/ingress-nginx   --namespace ingress-nginx --create-namespace
 ```
 
 Verify installation:
@@ -123,7 +148,7 @@ kubectl get svc -n ingress-nginx
 
 ---
 
-## 🔐 Step 4: Setup Basic Authentication
+## 🔐 Step 5: Setup Basic Authentication
 
 Create username and password using `htpasswd`:
 ```bash
@@ -140,7 +165,7 @@ kubectl get secret basic-auth -o yaml
 
 ---
 
-## 🌍 Step 5: Configure Ingress Resource for Flask, Grafana & Prometheus
+## 🌍 Step 6: Configure Ingress Resource for Flask, Grafana & Prometheus
 
 `k8s/ingress.yaml`
 ```yaml
@@ -195,20 +220,6 @@ kubectl apply -f k8s/ingress.yaml
 Verify:
 ```bash
 kubectl get ingress
-```
-
----
-
-## ✅ Step 6: Test Access
-
-Access your apps in browser:
-- Flask App: [http://flask.74.220.25.209.nip.io/](http://flask.74.220.25.209.nip.io/)  
-- Grafana: [http://grafana.74.220.25.209.nip.io/](http://grafana.74.220.25.209.nip.io/)  
-- Prometheus: [http://prometheus.74.220.25.209.nip.io/](http://prometheus.74.220.25.209.nip.io/)
-
-Use credentials for Grafana if prompted:
-```bash
-kubectl get secret grafana -n monitoring -o jsonpath="{.data.admin-password}" | powershell -Command "[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($(Get-Content -Raw)))"
 ```
 
 ---
@@ -343,4 +354,3 @@ You’ve successfully:
 
 🧑‍💻 **Author:** Siddhant Kumar Pandey  
 📘 **Tech Stack:** Flask, Docker, Kubernetes, NGINX, Terraform, Prometheus, Grafana
-
